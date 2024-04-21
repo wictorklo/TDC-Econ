@@ -13,3 +13,10 @@
    - Activity
    - Person bet on
    - Idk probably just a return-on-investment value
+
+
+To run:
+Install flask
+From root folder:
+
+```flask --app src/main --debug run```

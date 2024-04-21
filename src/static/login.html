@@ -1,0 +1,12 @@
+<h1>LOGIN PAGE</h1>
+<form action="/login" method="POST">
+    <label>Name:</label>
+    <input name="name" value="Wictor"/>
+    <label>Code:</label>
+    <input name="code" value="1234"/>
+    <input type="submit"/>
+</form>
+
+<script>
+    $.post("/login", {name: "Wictor", code: "1234"})
+</script>

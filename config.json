@@ -1,0 +1,22 @@
+{
+    "activities": {
+        "chug": {
+            "desc": "Chug a full beverage",
+            "ROI": 3,
+            "time": 300
+        },
+        "win": {
+            "desc": "Win an activity",
+            "ROI": 2,
+            "time": 600
+        },
+        "die": {
+            "desc": "Go to bed :(",
+            "ROI": 10,
+            "time": 3600
+        }
+    },
+    "people": ["Wictor", "William"],
+    "admins": ["Wictor"],
+    "start_cash": 1000
+}
