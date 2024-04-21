@@ -31,7 +31,9 @@ def index():
     print(name, name == None)
     if name == None:
         return redirect(url_for('static', filename='login.html'))
-    return render_template("index.html", name=name)
+    if name in users.keys():
+        return render_template("index.html", name=name)
+    return render_template("index.html", name=f"{name} (Unknown user)")
 
 @app.post("/login")
 def login():
@@ -42,6 +44,42 @@ def login():
         return resp
     return redirect(url_for('static', filename='login.html'))
 
+@app.get("/dashboard")
+def overview():
+    return render_template("overview.html")
+
+@app.get("/person/<name>")
+def person(name=None):
+    #TODO: Check that user does not try to invest in themselves
+    #Or leave it in as infinite money glitch?
+    return render_template("player.html", user=users[name])
+
+@app.post("/person/<name>/buy")
+def invest(name=None):
+        amount = request.form["amount"]
+        return redirect("/")
+
+@app.post("/person/<name>/sell")
+def sell(name=None):
+        amount = request.form["amount"]
+        return redirect("/")
+
+@app.get("/activity/<activity>")
+def activity(activity=None):
+    return render_template("activity.html", activity=activities[activity])
+
+app.post("/activity/<activity>/bet")
+def bet(activity=None):
+     amount = request.form["amount"]
+     player = request.form["player"]
+     return redirect("/")
+
+@app.get("/admin")
+def adminMenu(name=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        return render_template("admin.html", user=users[name])
+    return redirect("/")
 
 def validateLogin(name, password):
     #TODO: Add some basic logic here so people dont fuck each other over...
