@@ -1,1 +1,22 @@
 <h1>Hello, {{ name }}!</h1>
+<p>You have ${{ user.money }}</p>
+
+<h2>Active bets:</h2>
+<p>{{ user.bets }}</p>
+
+<h3>Place new bet</h3>
+{% for a in activities %}
+    <div class="activityPreview">
+        <label>{{a}}</label> - {{activities[a].ROI}}:1
+    </div>
+{% endfor %}
+
+<h2>Active investments:</h2>
+<p>{{ user.investments }}</p>
+
+<h3>Invest in another player</h3>
+{% for u in users %}
+    <div class="userPreview">
+        <label>{{u}}</label> - ${{users[u].money}}
+    </div>
+{% endfor %}

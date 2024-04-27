@@ -1,16 +1,16 @@
 {
     "activities": {
-        "chug": {
+        "Chug": {
             "desc": "Chug a full beverage",
             "ROI": 3,
             "time": 300
         },
-        "win": {
+        "Win": {
             "desc": "Win an activity",
             "ROI": 2,
             "time": 600
         },
-        "die": {
+        "Die": {
             "desc": "Go to bed :(",
             "ROI": 10,
             "time": 3600

@@ -2,6 +2,9 @@
 
 ### TODO
  - Serverside user database
+ - RSS Feed to update stuff?
+   - Wtf even is an RSS feed lmao
+   - Maybe just use websockets like normal people
  - Users:
    - Money
    - Active investments/bets

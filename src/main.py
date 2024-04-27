@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, make_response, url_for, redirect
 import json
 
+# https://marketsplash.com/how-to-use-flask-with-websockets/
 
 activities = {}
 users = {}
@@ -32,8 +33,8 @@ def index():
     if name == None:
         return redirect(url_for('static', filename='login.html'))
     if name in users.keys():
-        return render_template("index.html", name=name)
-    return render_template("index.html", name=f"{name} (Unknown user)")
+        return render_template("index.html", name=name, user=users[name], activities=activities, users=users)
+    return redirect(url_for('static', filename='login.html'))
 
 @app.post("/login")
 def login():
