@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, url_for, redirect
+from flask import Flask, render_template, request, make_response, url_for, redirect, jsonify
 import json
 
 # https://marketsplash.com/how-to-use-flask-with-websockets/
@@ -17,14 +17,21 @@ with open("config.json", "r") as file:
         users[p] = {}
         users[p]["money"] = cfg["start_cash"]
         users[p]["bets"] = []
-        users[p]["investments"] = []
+        users[p]["stocks"] = {}
+        for i in cfg["people"]:
+             users[p]["stocks"][i] = 0
         print(p, users[p])
 
 
 
 app = Flask(__name__, static_url_path='/static')
 
+def bet(better, activity, target, time):
+    pass
 
+def stockPrice(name):
+    #TODO: Do this dynamically
+    return 1
 
 @app.route("/")
 def index():
@@ -57,13 +64,29 @@ def person(name=None):
 
 @app.post("/person/<name>/buy")
 def invest(name=None):
-        amount = request.form["amount"]
-        return redirect("/")
+    print(request.json)
+    amount = request.json["amount"]
+    buyer = request.cookies.get("name")
+    print(f"{buyer} bought {amount} stocks in {name}")
+    # TODO: Check if buyer can afford it
+    users[buyer]["stocks"][name] += amount
+    users[buyer]["money"] -= amount*stockPrice(name)
+    # TODO: Add to running log
+    # TODO: Send update to all players
+    return redirect("/")
 
 @app.post("/person/<name>/sell")
 def sell(name=None):
-        amount = request.form["amount"]
-        return redirect("/")
+    print(request.json)
+    amount = request.json["amount"]
+    seller = request.cookies.get("name")
+    print(f"{seller} bought {amount} stocks in {name}")
+    # TODO: Check if seller owns the stocks
+    users[seller]["stocks"][name] -= amount
+    users[seller]["money"] += amount*stockPrice(name)
+    # TODO: Add to running log
+    # TODO: Send update to all players
+    return redirect("/")
 
 @app.get("/activity/<activity>")
 def activity(activity=None):
@@ -71,9 +94,14 @@ def activity(activity=None):
 
 app.post("/activity/<activity>/bet")
 def bet(activity=None):
-     amount = request.form["amount"]
-     player = request.form["player"]
-     return redirect("/")
+    amount = request.form["amount"]
+    player = request.form["player"]
+    time = request.form["time"]
+    better = request.cookies.get("name")
+    # TODO: Add to running log
+    # TODO: Send update to all players
+    bet(better, activity, player, time)
+    return redirect("/")
 
 @app.get("/admin")
 def adminMenu(name=None):

@@ -18,5 +18,8 @@
     },
     "people": ["Wictor", "William"],
     "admins": ["Wictor"],
-    "start_cash": 1000
+    "start_cash": 1000,
+    "configStock": {
+        "unitPriceRatio": 0.1
+    }
 }

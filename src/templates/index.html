@@ -1,3 +1,8 @@
+<head>
+    <script src="static/jquery-3.7.1.min.js"></script>
+</head>
+    
+
 <h1>Hello, {{ name }}!</h1>
 <p>You have ${{ user.money }}</p>
 
@@ -11,12 +16,28 @@
     </div>
 {% endfor %}
 
-<h2>Active investments:</h2>
-<p>{{ user.investments }}</p>
-
-<h3>Invest in another player</h3>
+<h2>Player stocks:</h2>
 {% for u in users %}
     <div class="userPreview">
-        <label>{{u}}</label> - ${{users[u].money}}
+        <label>{{u}}</label> [{{ user.stocks[u] }}] - ${{users[u].money}} <button onclick="buyStock('{{ u }}')"> Buy </button> <button onclick="sellStock('{{ u }}')"> Sell </button>
     </div>
 {% endfor %}
+
+{{users}}
+
+
+<script>
+
+    function buyStock(name, amount) {
+        fetch("/person/" + name + "/buy", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 1
+            })
+        })
+    }
+</script>
