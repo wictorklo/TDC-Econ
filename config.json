@@ -14,9 +14,20 @@
             "desc": "Go to bed :(",
             "ROI": 10,
             "time": 3600
+        },
+        "Charity": {
+            "desc": "Ring Bell (Buy shots)",
+            "ROI": -0.1,
+            "time": 1000
+        },
+        "Hit": {
+            "desc": "Hit on weman",
+            "ROI": 0,
+            "time": 10
         }
     },
     "people": ["Wictor", "William", "Sexy"],
+    "passwords": ["1234", "4321", "8008"],
     "admins": ["Wictor", "Sexy"],
     "start_cash": 1000,
     "configStock": {

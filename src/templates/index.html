@@ -40,4 +40,17 @@
             })
         })
     }
+
+    function sellStock(name, amount) {
+        fetch("/person/" + name + "/sell", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 1
+            })
+        })
+    }
 </script>
