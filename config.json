@@ -16,8 +16,8 @@
             "time": 3600
         }
     },
-    "people": ["Wictor", "William"],
-    "admins": ["Wictor"],
+    "people": ["Wictor", "William", "Sexy"],
+    "admins": ["Wictor", "Sexy"],
     "start_cash": 1000,
     "configStock": {
         "unitPriceRatio": 0.1
