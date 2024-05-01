@@ -1,28 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <script src="static/jquery-3.7.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Bets</title>
+    <link rel="stylesheet" href="static/style.css">
 </head>
+<body>
+    <header>
+        <h1>Live Bets</h1>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#market">Market</a></li>
+                <li><a href="#bets">Bets</a></li>
+                <li><a href="#live-feed">Live Feed First</a></li>
+                <li><a href="#bottom">Live Feed Last</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="profile">
+            <h2>Welcome, {{ name }}!</h2>
+            <p><strong>You have:</strong> ${{ user.money }}</p>
+            <p> . </p>
+        </section>
+        <section id="live-scores">
+            <h2>Live Scores</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Cash</th>
+                        <th>Stocks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>    
+                            <td> {{u}} </td>
+                            <td> {{users[u].money}} </td>
+                            <td> {{user.stocks[u]}} </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section id="market">
+            <h2>Market</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    
+                        <tr>
+                            <td> {{u}} </td>
+                            <td> {{u}} </td>
+                            <td> 
+                                <button onclick="buyStock('{{ u }}')"> Buy </button>
+                                <button onclick="sellStock('{{ u }}')"> Sell </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section id="bets">
+            <h2>Bets</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Return</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in activities %}
+                        <tr>    
+                            <td> {{a}} </td>
+                            <td> {{activities[a].ROI}} : 1 </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        <section id="live-feed">
+            <h2>Live Feed</h2>
+            <div class="feed">
+                <!-- Add real-time updates here -->
+            </div>
+        </section>
+    </main>
+    <footer id="bottom">
+        <h2> For Your Convinience </h2>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#profile">Profile</a></li>
+                <li><a href="#market">Market</a></li>
+                <li><a href="#bets">Bets</a></li>
+                <li><a href="#live-feed">Live Feed First</a></li>
+            </ul>
+        </nav>
+    </footer>
+</body>
+</html>
+
+
     
-
-<h1>Hello, {{ name }}!</h1>
-<p>You have ${{ user.money }}</p>
-
-<h2>Active bets:</h2>
-<p>{{ user.bets }}</p>
-
-<h3>Place new bet</h3>
-{% for a in activities %}
-    <div class="activityPreview">
-        <label>{{a}}</label> - {{activities[a].ROI}}:1
-    </div>
-{% endfor %}
-
-<h2>Player stocks:</h2>
-{% for u in users %}
-    <div class="userPreview">
-        <label>{{u}}</label> [{{ user.stocks[u] }}] - ${{users[u].money}} <button onclick="buyStock('{{ u }}')"> Buy </button> <button onclick="sellStock('{{ u }}')"> Sell </button>
-    </div>
-{% endfor %}
-
 {{users}}
 
 

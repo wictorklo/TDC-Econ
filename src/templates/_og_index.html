@@ -1,0 +1,56 @@
+<head>
+    <script src="static/jquery-3.7.1.min.js"></script>
+</head>
+    
+
+<h1>Hello, {{ name }}!</h1>
+<p>You have ${{ user.money }}</p>
+
+<h2>Active bets:</h2>
+<p>{{ user.bets }}</p>
+
+<h3>Place new bet</h3>
+{% for a in activities %}
+    <div class="activityPreview">
+        <label>{{a}}</label> - {{activities[a].ROI}}:1
+    </div>
+{% endfor %}
+
+<h2>Player stocks:</h2>
+{% for u in users %}
+    <div class="userPreview">
+        <label>{{u}}</label> [{{ user.stocks[u] }}] - ${{users[u].money}} <button onclick="buyStock('{{ u }}')"> Buy </button> <button onclick="sellStock('{{ u }}')"> Sell </button>
+    </div>
+{% endfor %}
+
+{{users}}
+
+
+<script>
+
+    function buyStock(name, amount) {
+        fetch("/person/" + name + "/buy", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 1
+            })
+        })
+    }
+
+    function sellStock(name, amount) {
+        fetch("/person/" + name + "/sell", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 1
+            })
+        })
+    }
+</script>
