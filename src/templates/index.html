@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Bets</title>
     <link rel="stylesheet" href="static/style.css">
+    <link rel="script" href="static/socket.io.min.js">
 </head>
 <body>
     <header>
@@ -39,7 +40,7 @@
                     {% for u in users %}
                         <tr>    
                             <td> {{u}} </td>
-                            <td> {{users[u].money}} </td>
+                            <td id="{{ u }}-money"> {{users[u].money}} </td>
                             <td> {{user.stocks[u]}} </td>
                         </tr>
                     {% endfor %}
@@ -85,6 +86,7 @@
                         <tr>    
                             <td> {{a}} </td>
                             <td> {{activities[a].ROI}} : 1 </td>
+                            <td> <button onclick="bet('Sexy', '{{ a }}', '100')"> Bet </button></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -115,9 +117,55 @@
 
     
 {{users}}
-
-
+<script src="static/socket.io.min.js"></script>
 <script>
+    let feed = document.getElementById("live-feed")
+    let username = document.cookie.split('; ').find(x => x.startsWith('name=')).split("=")[1]
+
+    function handleSold(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " sold " + data["amount"] + " stocks of " + data["stock"]
+        feed.appendChild(log)
+    }
+
+    function handleBought(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " bought " + data["amount"] + " stocks of " + data["stock"]
+        feed.appendChild(log)
+    }
+
+    function handleBet(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " bet $" +data["amount"] + " on " + data["player"] + " to " + data["activity"]
+        feed.appendChild(log)
+    }
+
+    function handleUpdate(data){
+        console.log(data)
+        if (data["type"] == "player") {
+            let elem = document.getElementById(data["name"] + "-money")
+            elem.textContent = data["money"]
+        }
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " bet $" +data["amount"] + " on " + data["player"] + " to " + data["activity"]
+        feed.appendChild(log)
+    }
+
+    function connect() {
+        let url = document.domain + ":" + location.port //5001
+        let socket = io.connect("ws://" + url)
+        socket.on("connect", () => {
+            console.log(socket.id)
+        })
+        socket.on("sold", (data) => handleSold(data))
+        socket.on("bet", (data) => handleBet(data))
+        socket.on("bought", (data) => handleBought(data))
+        socket.on("update", (data) => handleUpdate(data))
+        return socket
+    }
 
     function buyStock(name, amount) {
         fetch("/person/" + name + "/buy", {
@@ -144,4 +192,23 @@
             })
         })
     }
+
+    function bet(name, activity, amount) {
+        fetch("/activity/" + activity + "/bet", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 100,
+                player: name,
+                time: 300
+            })
+        })
+    }
+
+
+    var socket = connect()
+
 </script>

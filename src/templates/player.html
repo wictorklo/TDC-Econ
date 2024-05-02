@@ -31,7 +31,8 @@ Graph of net worth, list of investors {% endcomment %}
 
 
 <script>
-
+    
+    
     function buyStock(name, amount) {
         fetch("/person/" + name + "/buy", {
             method: "POST",
@@ -44,4 +45,6 @@ Graph of net worth, list of investors {% endcomment %}
             })
         })
     }
+
+    
 </script>

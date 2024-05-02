@@ -5,8 +5,9 @@ from flask import (
     make_response,
     url_for,
     redirect,
-    jsonify,
+    jsonify
 )
+from flask_socketio import SocketIO, emit
 import json
 
 # https://marketsplash.com/how-to-use-flask-with-websockets/
@@ -38,7 +39,7 @@ with open("config.json", "r") as file:
 
 
 app = Flask(__name__, static_url_path="/static")
-
+sock = SocketIO(app)
 
 def bet(better, activity, target, time):
     pass
@@ -113,6 +114,8 @@ def invest(name=None):
         users[buyer]["stocks"][name] += amount
         users[buyer]["money"] -= tot_price
         upPrice(name, amount)
+        sock.emit("bought", {"name": buyer, "new": users[buyer]["stocks"][name], "amount": amount, "stock": name})
+        sock.emit("update", {"type": "player", "name": buyer, "money": users[buyer]["money"]})
     else:
         pass
         # TODO: allert player they don't have enough money to buy
@@ -131,6 +134,8 @@ def sell(name=None):
         users[seller]["stocks"][name] -= amount
         users[seller]["money"] += round(amount * stockPrice(name), 2)
         downPrice(name, amount)
+        sock.emit("sold", {"name": seller, "new": users[seller]["stocks"][name], "amount": amount, "stock": name})
+        sock.emit("update", {"type": "player", "name": seller, "money": users[seller]["money"]})
     else:
         pass
         # TODO: allert player they don't own the stock
@@ -144,17 +149,16 @@ def activity(activity=None):
     return render_template("activity.html", activity=activities[activity])
 
 
-app.post("/activity/<activity>/bet")
-
-
-def bet(activity=None):
-    amount = request.form["amount"]
-    player = request.form["player"]
-    time = request.form["time"]
+@app.post("/activity/<activity>/bet")
+def getBet(activity=None):
+    amount = request.json["amount"]
+    player = request.json["player"]
+    time = request.json["time"]
     better = request.cookies.get("name")
     # TODO: Add to running log
     # TODO: Send update to all players
     bet(better, activity, player, time)
+    sock.emit("bet", {"name": better, "activity": activity, "amount": amount, "player": player})
     return redirect("/")
 
 
@@ -166,9 +170,20 @@ def adminMenu(name=None):
     return redirect("/")
 
 
+@sock.on("connect")
+def handleConnect():
+    print("Client connected")
+    emit("bet", {"data": "test"})
+
+
 def validateLogin(name, password):
     """Validate login information"""
     if name in users:
         if users[name]["password"] == password:
             return True
     return False
+
+
+if __name__ == '__main__':
+    sock.run(app)
+    
