@@ -41,6 +41,8 @@ Live feed also goes here
                 })
             })
             historyChart.update()
+            let top5 = players.sort((x, y) => y.money-x.money).slice(0,5)
+            newTop5(top5.map(x=>x.name), top5.map(x=>x.money))
         })
     }
     init()
@@ -48,6 +50,9 @@ Live feed also goes here
 
     var top5chart = new Chart("top5", {
         type: "bar",
+        options: {
+            legend: {display: false}
+        },
         data: {
             labels: top5players,
             datasets: [{
