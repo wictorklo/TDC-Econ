@@ -9,7 +9,7 @@ from flask import (
 )
 from flask_socketio import SocketIO, emit
 from threading import Thread
-import json, time
+import json, time, random
 
 # https://marketsplash.com/how-to-use-flask-with-websockets/
 
@@ -32,7 +32,7 @@ with open("config.json", "r") as file:
         users[p]["money"] = cfg["start_cash"]
         users[p]["bets"] = []
         users[p]["stocks"] = {}
-        users[p]["password"] = cfg["passwords"][i]
+        users[p]["password"] = str(random.randint(0, 9999)).zfill(4)
         for i in cfg["people"]:
             users[p]["stocks"][i] = 0
             stock_prices[i] = 1
@@ -43,6 +43,10 @@ app = Flask(__name__, static_url_path="/static")
 sock = SocketIO(app)
 
 def bet(better, activity, target, time):
+    # TODO: Verify user can afford the bet
+    # TODO: Calculate expiration time
+    # TODO: Register bet
+    # TODO: Emit info to clients
     pass
 
 
@@ -160,8 +164,6 @@ def getBet(activity=None):
     player = request.json["player"]
     time = request.json["time"]
     better = request.cookies.get("name")
-    # TODO: Add to running log
-    # TODO: Send update to all players
     bet(better, activity, player, time)
     sock.emit("bet", {"name": better, "activity": activity, "amount": amount, "player": player})
     return redirect("/")
@@ -171,7 +173,7 @@ def getBet(activity=None):
 def adminMenu(name=None):
     name = request.cookies.get("name")
     if name in admins:
-        return render_template("admin.html", user=users[name])
+        return render_template("admin.html", users=users, activities=activities)
     return redirect("/")
 
 
