@@ -33,6 +33,7 @@ with open("config.json", "r") as file:
         users[p]["bets"] = []
         users[p]["stocks"] = {}
         users[p]["password"] = str(random.randint(0, 9999)).zfill(4)
+        print(f"Name: {p}, PIN: {users[p]['password']}")
         for i in cfg["people"]:
             users[p]["stocks"][i] = 0
             stock_prices[i] = 1
