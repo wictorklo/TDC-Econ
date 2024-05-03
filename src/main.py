@@ -181,11 +181,22 @@ def handleConnect():
     emit("bet", {"data": "test"})
 
 class looping(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.running = True
+
     def run(self):
-        while True:
+        while self.running:
             print("Emitting")
-            sock.emit("history", {"data": playerMoney()})
-            time.sleep(10)
+            try:
+                sock.emit("history", {"data": playerMoney()})
+            except:
+                return
+            time.sleep(60)
+
+    def stop(self):
+        print("Stopping loop")
+        self.running = False
 
 def playerMoney():
     return [{"name": u, "money": users[u]["money"]} for u in users]
@@ -201,8 +212,8 @@ def validateLogin(name, password):
 
 if __name__ == '__main__':
     loop = looping()
-    loop.start()
+    #loop.start()
     app.run(host="0.0.0.0", debug=True)
-    sock.run(app)
+    #loop.stop()
     
     
