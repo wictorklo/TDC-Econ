@@ -1,1 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Bets</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<canvas id="history" style="width:90%;height:30%"></canvas> <br>
+<canvas id="top5" style="width:100%;max-width:700px"></canvas> 
 This page should be on the TV or something to give quick overview of who buys what, what is highest rated, or who has most money
+Bar chart of money (At least top 5)
+Line graph of price history (Multiple lines?)
+Live feed also goes here
+<section id="live-feed">
+    <h2>Live Feed</h2>
+    <div class="feed">
+        <!-- Add real-time updates here -->
+    </div>
+</section>
+<script src="static/socket.io.min.js"></script>
+<script src="static/Chart.js"></script>
+<script>
+    let players = {}
+    ds = []
+    let feed = document.getElementById("live-feed")
+    const barColors = ["red", "green","blue","orange","brown", "red", "green","blue","orange","brown", "red", "green"];
+    const top5money = [55, 49, 44, 24, 15];
+    var top5players = ["William", "Sexy", "Wictor", "Oliver", "Mani"]
+    
+    function init() {
+        fetch("/api/players/money").then(async (data) => {players=await data.json()}).then(() => {
+            players.forEach(p => {
+                ds.push({
+                    data: [p.money],
+                    label: p.name,
+                    fill: false
+                })
+            })
+            historyChart.update()
+        })
+    }
+    init()
+    
+
+    var top5chart = new Chart("top5", {
+        type: "bar",
+        data: {
+            labels: top5players,
+            datasets: [{
+                backgroundColor: barColors,
+                data: top5money
+            }]
+        }
+    });
+
+    var historyChart = new Chart("history", {
+        type: "line",
+        options: {
+            legend: {display: true}
+        },
+        data: {
+            datasets: ds
+        }
+    });
+
+    function addHistory(data){
+        users = data["data"]
+        console.log(users)
+        historyChart.data.labels.push(" ")
+        users.forEach(u => {
+            i = historyChart.data.datasets.indexOf(historyChart.data.datasets.find(d => d.label === u.name))
+            historyChart.data.datasets[i].data.push(u.money)
+            historyChart.data.datasets[i].borderColor = barColors[i]
+        })
+        historyChart.update()
+    }
+
+    function newTop5(players, money){
+        top5chart.data.labels = players
+        top5chart.data.datasets[0].data = money
+        top5chart.update()
+    }
+
+    function connect() {
+        let url = document.domain + ":" + location.port //5001
+        let socket = io.connect("ws://" + url)
+        socket.on("connect", () => {
+            console.log(socket.id)
+        })
+        socket.on("history", (data) => addHistory(data))
+        return socket
+    }
+    connect()
+
+</script>
+</html>

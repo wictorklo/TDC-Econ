@@ -26,8 +26,8 @@
             "time": 10
         }
     },
-    "people": ["Wictor", "William", "Sexy"],
-    "passwords": ["1234", "4321", "8008"],
+    "people": ["Wictor", "William", "Oliver", "Rolf", "Julian", "Jacob", "Mads", "Erick", "Jan", "Mani", "Lucas"],
+    "passwords": ["1234", "4321", "8008", "1234", "4321", "8008", "1234", "4321", "8008", "1234", "4321"],
     "admins": ["Wictor", "Sexy"],
     "start_cash": 1000,
     "configStock": {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Bets</title>
     <link rel="stylesheet" href="static/style.css">
-    <link rel="script" href="static/socket.io.min.js">
 </head>
 <body>
     <header>
@@ -63,9 +62,17 @@
                         <tr>
                             <td> {{u}} </td>
                             <td> {{u}} </td>
-                            <td> 
-                                <button onclick="buyStock('{{ u }}')"> Buy </button>
-                                <button onclick="sellStock('{{ u }}')"> Sell </button>
+                                <td>
+                                    <button onclick="buyStock('{{ u }}', 1)"> Buy 1</button>
+                                    <button onclick="buyStock('{{ u }}', 5)"> Buy 5</button>
+                                    <button onclick="buyStock('{{ u }}', 10)"> Buy 10</button>
+                                    <button onclick="buyStock('{{ u }}', 50)"> Buy 50</button>
+                                    <button onclick="buyStock('{{ u }}', -1)"> Buy max</button>
+                                    <button onclick="sellStock('{{ u }}', 1)"> Sell 1</button>
+                                    <button onclick="sellStock('{{ u }}', 5)"> Sell 5</button>
+                                    <button onclick="sellStock('{{ u }}', 10)"> Sell 10</button>
+                                    <button onclick="sellStock('{{ u }}', 50)"> Sell 50</button>
+                                    <button onclick="sellStock('{{ u }}', -1)"> Sell all</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -149,9 +156,6 @@
             let elem = document.getElementById(data["name"] + "-money")
             elem.textContent = data["money"]
         }
-        let log = document.createElement("div")
-        log.textContent = data["name"] + " bet $" +data["amount"] + " on " + data["player"] + " to " + data["activity"]
-        feed.appendChild(log)
     }
 
     function connect() {
@@ -168,6 +172,7 @@
     }
 
     function buyStock(name, amount) {
+        amount = prompt("How many?")
         fetch("/person/" + name + "/buy", {
             method: "POST",
             headers: {
@@ -175,7 +180,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: 1
+                amount: Number(amount)
             })
         })
     }

@@ -8,7 +8,8 @@ from flask import (
     jsonify
 )
 from flask_socketio import SocketIO, emit
-import json
+from threading import Thread
+import json, time
 
 # https://marketsplash.com/how-to-use-flask-with-websockets/
 
@@ -95,6 +96,10 @@ def login():
 def overview():
     return render_template("overview.html")
 
+@app.get("/api/players/money")
+def getPlayerMoney():
+    return jsonify(playerMoney())
+
 
 @app.get("/person/<name>")
 def person(name=None):
@@ -138,7 +143,7 @@ def sell(name=None):
         sock.emit("update", {"type": "player", "name": seller, "money": users[seller]["money"]})
     else:
         pass
-        # TODO: allert player they don't own the stock
+        # TODO: alert player they don't own the stock
     # TODO: Add to running log
     # TODO: Send update to all players
     return redirect("/")
@@ -175,6 +180,16 @@ def handleConnect():
     print("Client connected")
     emit("bet", {"data": "test"})
 
+class looping(Thread):
+    def run(self):
+        while True:
+            print("Emitting")
+            sock.emit("history", {"data": playerMoney()})
+            time.sleep(10)
+
+def playerMoney():
+    return [{"name": u, "money": users[u]["money"]} for u in users]
+
 
 def validateLogin(name, password):
     """Validate login information"""
@@ -185,5 +200,9 @@ def validateLogin(name, password):
 
 
 if __name__ == '__main__':
+    loop = looping()
+    loop.start()
+    app.run(host="0.0.0.0", debug=True)
     sock.run(app)
+    
     
