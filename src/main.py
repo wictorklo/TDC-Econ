@@ -32,6 +32,7 @@ with open("config.json", "r") as file:
         users[p]["money"] = cfg["start_cash"]
         users[p]["bets"] = []
         users[p]["stocks"] = {}
+        users[p]["tot_stocks"] = 0
         users[p]["password"] = str(random.randint(0, 9999)).zfill(4)
         print(f"Name: {p}, PIN: {users[p]['password']}")
         for i in cfg["people"]:
@@ -82,6 +83,7 @@ def index():
             user=users[name],
             activities=activities,
             users=users,
+            stock_prices=stock_prices
         )
     return redirect(url_for("static", filename="login.html"))
 
@@ -118,14 +120,29 @@ def invest(name=None):
     print(request.json)
     amount = request.json["amount"]
     buyer = request.cookies.get("name")
+
+    # Recevies -1 when buying maximum amount
+    if amount == -1:
+        amount = int(users[buyer]["money"] / stockPrice(name))
+
+    # Calculate total price
     tot_price = round(amount * stockPrice(name), 2)
+
+    # Check if user has enough money to proceed
     if users[buyer]["money"] > tot_price:
         print(f"{buyer} bought {amount} stocks in {name}")
+
+        # Add the stock and subtract the money
         users[buyer]["stocks"][name] += amount
+        users[buyer]["tot_stocks"] += amount
         users[buyer]["money"] -= tot_price
+
+        # Update stock price
         upPrice(name, amount)
+
+        # Update interface
         sock.emit("bought", {"name": buyer, "new": users[buyer]["stocks"][name], "amount": amount, "stock": name})
-        sock.emit("update", {"type": "player", "name": buyer, "money": users[buyer]["money"]})
+        sock.emit("update", {"type": "player", "name": buyer, "money": users[buyer]["money"], "tot_stocks": users[buyer]["tot_stocks"], "stock": users[buyer]["stocks"][name], "who": name, "price": stockPrice(name)})
     else:
         pass
         # TODO: allert player they don't have enough money to buy
@@ -137,15 +154,31 @@ def invest(name=None):
 @app.post("/person/<name>/sell")
 def sell(name=None):
     print(request.json)
+
     amount = request.json["amount"]
     seller = request.cookies.get("name")
+
+    # Check if user has stocks
     if users[seller]["stocks"][name]:
+
+        # Receives -1 when selling all stocks
+        # setting amount to amount owned
+        if amount == -1:
+            amount = users[seller]["stocks"][name]
+
         print(f"{seller} sold {amount} stocks in {name}")
+
+        # Remove the stocks and add the money
         users[seller]["stocks"][name] -= amount
+        users[seller]["tot_stocks"] -= amount
         users[seller]["money"] += round(amount * stockPrice(name), 2)
+
+        # Adjust stock price
         downPrice(name, amount)
+
+        # Update interface
         sock.emit("sold", {"name": seller, "new": users[seller]["stocks"][name], "amount": amount, "stock": name})
-        sock.emit("update", {"type": "player", "name": seller, "money": users[seller]["money"]})
+        sock.emit("update", {"type": "player", "name": seller, "money": users[seller]["money"], "tot_stocks": users[seller]["tot_stocks"], "stock": users[seller]["stocks"][name], "who": name, "price": stockPrice(name)})
     else:
         pass
         # TODO: alert player they don't own the stock

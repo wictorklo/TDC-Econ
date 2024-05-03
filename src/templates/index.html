@@ -40,7 +40,7 @@
                         <tr>    
                             <td> {{u}} </td>
                             <td id="{{ u }}-money"> {{users[u].money}} </td>
-                            <td> {{user.stocks[u]}} </td>
+                            <td id="{{ u }}-stocks"> {{users[u].tot_stocks}} </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -53,6 +53,7 @@
                     <tr>
                         <th>User</th>
                         <th>Price</th>
+                        <th>Owned</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -61,7 +62,8 @@
                     
                         <tr>
                             <td> {{u}} </td>
-                            <td> {{u}} </td>
+                            <td id="{{u}}-price"> {{stock_prices[u]}} </td>
+                            <td id="{{name}}{{u}}-stocks"> {{users[name].stocks[u]}} </td>
                                 <td>
                                     <button onclick="buyStock('{{ u }}', 1)"> Buy 1</button>
                                     <button onclick="buyStock('{{ u }}', 5)"> Buy 5</button>
@@ -153,8 +155,14 @@
     function handleUpdate(data){
         console.log(data)
         if (data["type"] == "player") {
-            let elem = document.getElementById(data["name"] + "-money")
-            elem.textContent = data["money"]
+            let money_elem = document.getElementById(data["name"] + "-money")
+            money_elem.textContent = data["money"]
+            let tot_stock_elem = document.getElementById(data["name"] + "-stocks")
+            tot_stock_elem.textContent = data["tot_stocks"]
+            let stock_elem = document.getElementById(data["name"] + data["who"] + "-stocks")
+            stock_elem.textContent = data["stock"]
+            let price_elem = document.getElementById(data["who"] + "-price")
+            price_elem.textContent = data["price"]
         }
     }
 
@@ -172,7 +180,7 @@
     }
 
     function buyStock(name, amount) {
-        amount = prompt("How many?")
+        // amount = prompt("How many?")
         fetch("/person/" + name + "/buy", {
             method: "POST",
             headers: {
@@ -193,7 +201,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: 1
+                amount: Number(amount)
             })
         })
     }
