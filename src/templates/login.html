@@ -1,0 +1,16 @@
+<h1>LOGIN PAGE</h1>
+<form action="/login" method="POST">
+    <label>Name:</label>
+    <select name="name">
+        {% for u in users %}
+            <option value="{{ u }}">{{ u }}</option>
+        {% endfor %}
+    </select>
+    <label>PIN:</label>
+    <input name="code" type="number" value="0000"/>
+    <input type="submit"/>
+</form>
+
+<!-- <script>
+    $.post("/login", {name: "...", code: "1234"})
+</script> -->

@@ -49,7 +49,9 @@ app = Flask(__name__, static_url_path="/static")
 sock = SocketIO(app)
 
 def bet(better, activity, target, amount, time):
-    if users[better]["money"] < amount:
+    if int(amount) < 0:
+        return
+    if users[better]["money"] < int(amount):
         amount = users[better]["money"]
     time = 2
     reward = amount * activities[activity]["ROI"]
@@ -84,7 +86,10 @@ def index():
     name = request.cookies.get("name")
     print(name, name == None)
     if name == None:
-        return redirect(url_for("static", filename="login.html"))
+        return render_template(
+            "login.html",
+            users=users
+        )
     if name in users.keys():
         print([b for b in bets if b["better"] == name ])
         return render_template(
@@ -107,7 +112,7 @@ def login():
         resp = make_response(redirect("/"))
         resp.set_cookie("name", request.form["name"])
         return resp
-    return redirect(url_for("static", filename="login.html"))
+    return redirect("/")
 
 
 @app.get("/dashboard")
@@ -194,23 +199,18 @@ def sell(name=None):
     return redirect("/")
 
 
-@app.get("/activity/<activity>")
-def activity(activity=None):
-    return render_template("activity.html", activity=activities[activity])
-
-
-@app.post("/activity/<activity>/bet")
+@app.post("/activity/bet")
 def getBet(activity=None):
-    amount = request.json["amount"]
-    player = request.json["player"]
-    time = request.json["time"]
+    amount = request.form["amount"]
+    player = request.form["target"]
+    activity = request.form["activity"]
+    time = int(request.form["time"])
     better = request.cookies.get("name")
-    bet(better, activity, player, amount, time)
+    bet(better, activity, player, int(amount), time)
     stock_prices[better] = round(users[better]["money"] / (price_constant), 4)
     sock.emit("bet", {"name": better, "activity": activity, "amount": amount, "player": player})
     sock.emit("update", {"type": "player", "name": better, "money": users[better]["money"], "tot_stocks": users[better]["tot_stocks"], "stock": users[better]["stocks"][better], "who": better, "price": stockPrice(better)})
     return redirect("/")
-
 
 @app.get("/admin")
 def adminMenu(name=None):

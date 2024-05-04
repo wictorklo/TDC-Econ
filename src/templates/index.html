@@ -7,23 +7,62 @@
     <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <header>
-        <h1>Your Bets</h1>
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#market">Market</a></li>
-                <li><a href="#bets">Bets</a></li>
-                <li><a href="#live-feed">Live Feed First</a></li>
-                <li><a href="#bottom">Live Feed Last</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- The Modal -->
+    <div id="betModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <form id="betForm" method="POST" action="/activity/bet">
+        <label for="target">I bet <select name="target" id="target">
+            {% for u in users %}
+                <option value="{{ u }}">{{ u }}</option>
+            {% endfor %}
+        </select>
+    </label>
+        
+        <label for="activity">Will <select name="activity" id="activity">
+            {% for a in activities %}
+                <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+        </select></label>
+        <label for="time">Within <input name="time" id="time" type="number" value="5"/> minutes</label>
+        <label for="amount">for $<input name="amount" id="amount" type="number" value="100"/></label>
+        <input type="submit" id="betModalBuy">Place bet</button>
+      </form>
+    </div>
+
+    <script>
+        var modal = document.getElementById("betModal");
+        var btn = document.getElementById("betModalBuy")
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none"
+        }
+        function showModal(activity) {
+            modal.style.display = "block"
+            document.getElementById("target")
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        } 
+    </script>
+  
+  </div>
     <main>
         <section id="profile">
             <h2>Welcome, {{ name }}!</h2>
             <p><strong>You have:</strong> ${{ user.money }}</p>
             <p> . </p>
+        </section>
+        <section id="live-bets">
+            <h2>Your Bets</h2>
+            {% for b in bets %}
+                {{ b }}
+            {% endfor %}
         </section>
         <section id="live-scores">
             <h2>Live Scores</h2>
@@ -95,7 +134,7 @@
                         <tr>    
                             <td> {{a}} </td>
                             <td> {{activities[a].ROI}} : 1 </td>
-                            <td> <button onclick="bet('Sexy', '{{ a }}', '100')"> Bet </button></td>
+                            <td> <button onclick="showModal('{{ a }}')"> Bet </button></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -108,24 +147,13 @@
             </div>
         </section>
     </main>
-    <footer id="bottom">
-        <h2> For Your Convinience </h2>
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#profile">Profile</a></li>
-                <li><a href="#market">Market</a></li>
-                <li><a href="#bets">Bets</a></li>
-                <li><a href="#live-feed">Live Feed First</a></li>
-            </ul>
-        </nav>
-    </footer>
+
 </body>
 </html>
 
 
     
-{{users}}
+
 <script src="static/socket.io.min.js"></script>
 <script>
     let feed = document.getElementById("live-feed")
