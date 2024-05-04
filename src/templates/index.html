@@ -28,7 +28,7 @@
         </select></label>
         <label for="time">Within <input name="time" id="time" type="number" value="5"/> minutes</label>
         <label for="amount">for $<input name="amount" id="amount" type="number" value="100"/></label>
-        <input type="submit" id="betModalBuy">Place bet</button>
+        <input type="submit" id="betModalBuy" value="Place bet"></button>
       </form>
     </div>
 
@@ -132,7 +132,7 @@
                 <tbody>
                     {% for a in activities %}
                         <tr>    
-                            <td> {{a}} </td>
+                            <td> <b>{{a}}</b> {{activities[a].desc}} </td>
                             <td> {{activities[a].ROI}} : 1 </td>
                             <td> <button onclick="showModal('{{ a }}')"> Bet </button></td>
                         </tr>

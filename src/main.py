@@ -63,7 +63,7 @@ def bet(better, activity, target, amount, time):
         "target": target,
         "activity": activity,
         "reward": reward,
-        "complete": True,
+        "complete": False,
         "better": better
     }
     t = Timer(time*60, evalBet, [runBet["betID"]])
@@ -219,31 +219,65 @@ def getBet(activity=None):
 def adminMenu(name=None):
     name = request.cookies.get("name")
     if name in admins:
-        return render_template("admin.html", users=users, activities=activities)
+        return render_template("admin.html", users=users, activities=activities, bets=[b for b in bets if not b["complete"]])
+    return redirect("/")
+
+@app.get("/admin/api/activity/new/<activity>/<desc>")
+def newActivity(activity=None, desc=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        activities[activity] = {"desc": desc}
+        activities[activity]["ROI"] = 1
+        return redirect("/admin")
+    return redirect("/")
+
+@app.get("/admin/api/activity/roi/<activity>/<new>")
+def setROI(activity=None, new=0):
+    name = request.cookies.get("name")
+    if name in admins:
+        activities[activity]["ROI"] = int(new)
+        return redirect("/admin")
     return redirect("/")
 
 @app.get("/admin/api/winbet/<betID>")
-def winBet(name=None):
+def winBet(betID=None):
     name = request.cookies.get("name")
     if name in admins:
-        # Find bet-thread and mark it complete
-        # Give player their money
-        pass
+        bets[int(betID)]["complete"] = True
+        return redirect("/admin")
+    return redirect("/")
 
-@app.get("/admin/api/freeMoney/<name>/<amount>")
-def freeMoney(name=None):
+@app.get("/admin/api/player/<p>")
+def newPlayer(p=None):
     name = request.cookies.get("name")
     if name in admins:
-        # add money to player
-        # emit event
-        pass
+        users[p] = {}
+        users[p]["money"] = cfg["start_cash"]
+        users[p]["bets"] = []
+        users[p]["tot_stocks"] = 0
+        users[p]["password"] = str(random.randint(0, 9999)).zfill(4)
+        stock_prices[p] = 1
+        for u in users:
+            users[p]["stocks"][u] = 0
+            users[u]["stocks"][p] = 0
+        return redirect("/admin")
+    return redirect("/")
 
-@app.get("/admin/api/newpin/<name>")
-def newPin(name=None):
+@app.get("/admin/api/freeMoney/<player>/<amount>")
+def freeMoney(player=None, amount=0):
     name = request.cookies.get("name")
     if name in admins:
-        # change player password
-        pass
+        users[player]["money"] += int(amount)
+        return redirect("/admin")
+    return redirect("/")
+
+@app.get("/admin/api/newpin/<player>")
+def newPin(player=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        users[player]["password"] = str(random.randint(0, 9999)).zfill(4)
+        return redirect("/admin")
+    return redirect("/")
 
 
 @sock.on("connect")
@@ -285,8 +319,8 @@ def validateLogin(name, password):
 
 if __name__ == '__main__':
     loop = Looping()
-    #loop.start()
+    loop.start()
     app.run(host="0.0.0.0", debug=True)
-    #loop.stop()
+    loop.stop()
     
     

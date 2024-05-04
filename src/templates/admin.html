@@ -19,16 +19,17 @@
             </tr>
         </thead>
         <tbody id="openBets">
-            <tr>    
-                <td> William </td>
-                <td> Wictor </td>
-                <td> Die </td>
-                <td> 21:00 </td>
-                <td>
-                    <button onclick="bet('Sexy', '{{ a }}', '100')"> Complete </button>
-                    <button onclick="bet('Sexy', '{{ a }}', '100')"> Fail </button>
-                </td>
-            </tr>
+            {% for b in bets %}
+                <tr>    
+                    <td> {{ b.better }} </td>
+                    <td> {{ b.target }} </td>
+                    <td> {{ b.activity }} </td>
+                    <td> {{ b.deadline }} </td>
+                    <td>
+                        <button onclick="complete({{ b.betID }})">Complete</button>
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 </section>
@@ -49,13 +50,13 @@
                     <td> {{ users[u].password }} </td>
                     <td>
                         <button>Recreate</button>
-                        <button>Free money</button>
+                        <button onclick="giveMoney('{{ u }}')">Free money</button>
                     </td>
                 </tr>
             {% endfor %}
             <tr>
                 <td>
-                    <button>Add player</button>
+                    <button onclick="newPlayer()">Add player</button>
                 </td>
             </tr>
         </tbody>
@@ -77,14 +78,14 @@
                     <td> {{ a }} </td>
                     <td> {{ activities[a].ROI }}:1 </td>
                     <td>
-                        <button>Change ROI</button>
-                        <button>Delete</button>
+                        <button onclick="setROI('{{a}}')">Change ROI</button>
+                        <button onclick="alert('Doesnt work. Just set ROI to 0 lol')">Delete</button>
                     </td>
                 </tr>
             {% endfor %}
             <tr>
                 <td>
-                    <button>New</button>
+                    <button onclick="newActivity()">New</button>
                 </td>
             </tr>
         </tbody>
@@ -95,10 +96,27 @@
     <p> When game is over, press this button to allow complete fucking chaos </p>
     <button>Make all players admin</button>
 </section>
-[/] Admin stuff to submit completed activities or whatever else we feel like
-[/] Add new activity
-[/] Add player 
-[/] Change return on investment or price constant
-[ ] Save game state???
 
 <script src="static/socket.io.min.js"></script>
+<script>
+    function newPlayer() {
+        let name = prompt("Name of the player?")
+        fetch("/admin/api/player/" + name)
+    }
+    function setROI(activity) {
+        let roi = prompt("What is the new return-rate?")
+        fetch("/admin/api/activity/roi/" + activity + "/" + roi)
+    }
+    function newActivity() {
+        let name = prompt("Give a 1-word name")
+        let desc = prompt("Give a brief description")
+        fetch("/admin/api/activity/new/" + name + "/" + desc)
+    }
+    function complete(betID) {
+        fetch("/admin/api/winbet/" + betID)
+    }
+    function giveMoney(name) {
+        let amount = prompt("How much?")
+        fetch("/admin/api/freeMoney/" + name + "/" + amount)
+    }
+</script>
