@@ -180,6 +180,14 @@
         feed.appendChild(log)
     }
 
+    function handleReward(data){
+        let money_elem = document.getElementById(data["name"] + "-money")
+        money_elem.textContent = data["money"]
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " won $" +data["reward"] + " for " + data["reason"]
+        feed.appendChild(log)
+    }
+
     function handleUpdate(data){
         console.log(data)
         if (data["type"] == "player") {
@@ -201,6 +209,7 @@
             console.log(socket.id)
         })
         socket.on("sold", (data) => handleSold(data))
+        socket.on("reward", (data) => handleReward(data))
         socket.on("bet", (data) => handleBet(data))
         socket.on("bought", (data) => handleBought(data))
         socket.on("update", (data) => handleUpdate(data))

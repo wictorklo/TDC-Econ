@@ -53,7 +53,6 @@ def bet(better, activity, target, amount, time):
         return
     if users[better]["money"] < int(amount):
         amount = users[better]["money"]
-    time = 2
     reward = amount * activities[activity]["ROI"]
     users[better]["money"] -= amount
     ctime = datetime.now()
@@ -64,18 +63,22 @@ def bet(better, activity, target, amount, time):
         "target": target,
         "activity": activity,
         "reward": reward,
-        "complete": False,
+        "complete": True,
         "better": better
     }
-    t = Timer(time*60, evalBet, runBet)
+    t = Timer(time*60, evalBet, [runBet["betID"]])
     bets.append(runBet)
     print(bets)
     t.start()
-    pass
 
-def evalBet(bet):
-    print(f"BET EXPIRED: {bet}")
-    pass
+def evalBet(betID):
+    bet = bets[betID]
+    print(f"BET EXPIRED: {bet}.")
+    if bet["complete"]:
+        name = bet["better"]
+        users[name]["money"] += bet["reward"]
+        sock.emit("reward", {"name": name, "reason": f"winning a bet", "reward": bet["reward"], "money": users[name]["money"]})
+    bets[betID]["complete"] = True
 
 def stockPrice(name):
     return stock_prices[name]
@@ -91,7 +94,7 @@ def index():
             users=users
         )
     if name in users.keys():
-        print([b for b in bets if b["better"] == name ])
+        print([b for b in bets if b["better"] == name and not b["complete"]])
         return render_template(
             "index.html",
             name=name,

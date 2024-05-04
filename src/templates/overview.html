@@ -10,10 +10,6 @@
 <body>
 <canvas id="history" style="width:90%;height:30%"></canvas> <br>
 <canvas id="top5" style="width:100%;max-width:700px"></canvas> 
-This page should be on the TV or something to give quick overview of who buys what, what is highest rated, or who has most money
-Bar chart of money (At least top 5)
-Line graph of price history (Multiple lines?)
-Live feed also goes here
 <section id="live-feed">
     <h2>Live Feed</h2>
     <div class="feed">
@@ -26,7 +22,7 @@ Live feed also goes here
 <script>
     let players = {}
     ds = []
-    let feed = document.getElementById("live-feed")
+    let feed = document.getElementsByClassName("feed")[0]
     const barColors = ["red", "green","blue","orange","brown", "red", "green","blue","orange","brown", "red", "green"];
     const top5money = [55, 49, 44, 24, 15];
     var top5players = ["William", "Sexy", "Wictor", "Oliver", "Mani"]
@@ -37,7 +33,8 @@ Live feed also goes here
                 ds.push({
                     data: [p.money],
                     label: p.name,
-                    fill: false
+                    fill: false,
+                    borderColor: randomColor()
                 })
             })
             historyChart.update()
@@ -72,6 +69,14 @@ Live feed also goes here
         }
     });
 
+    function randomColor() {
+        let r = Math.floor(Math.random() * 255);
+        let g = Math.floor(Math.random() * 255);
+        let b = Math.floor(Math.random() * 255);
+        let color = "rgb(" + r + "," + g + "," + b + ")";
+        return color
+    }
+
     function addHistory(data){
         users = data["data"]
         console.log(users)
@@ -90,12 +95,43 @@ Live feed also goes here
         top5chart.update()
     }
 
+    function handleSold(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " sold " + data["amount"] + " stocks of " + data["stock"]
+        feed.insertBefore(log, feed.childNodes[0])
+    }
+
+    function handleBought(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " bought " + data["amount"] + " stocks of " + data["stock"]
+        feed.insertBefore(log, feed.childNodes[0])
+    }
+
+    function handleBet(data){
+        console.log(data)
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " bet $" +data["amount"] + " on " + data["player"] + " to " + data["activity"]
+        feed.insertBefore(log, feed.childNodes[0])
+    }
+
+    function handleReward(data){
+        let log = document.createElement("div")
+        log.textContent = data["name"] + " won $" +data["reward"] + " for " + data["reason"]
+        feed.insertBefore(log, feed.childNodes[0])
+    }
+
     function connect() {
         let url = document.domain + ":" + location.port //5001
         let socket = io.connect("ws://" + url)
         socket.on("connect", () => {
             console.log(socket.id)
         })
+        socket.on("sold", (data) => handleSold(data))
+        socket.on("bet", (data) => handleBet(data))
+        socket.on("reward", (data) => handleReward(data))
+        socket.on("bought", (data) => handleBought(data))
         socket.on("history", (data) => addHistory(data))
         return socket
     }
