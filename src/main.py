@@ -8,18 +8,22 @@ from flask import (
     jsonify
 )
 from flask_socketio import SocketIO, emit
-from threading import Thread
+from threading import Thread, Lock, Timer
 import json, time, random
+from datetime import datetime, timedelta
 
 # https://marketsplash.com/how-to-use-flask-with-websockets/
 
-price_constant = 0.02
+price_constant = 1000
 
 activities = {}
 users = {}
 admins = []
 log = []
 stock_prices = {}
+bets = []
+
+lock = Lock()
 
 with open("config.json", "r") as file:
     cfg = json.load(file)
@@ -44,30 +48,35 @@ with open("config.json", "r") as file:
 app = Flask(__name__, static_url_path="/static")
 sock = SocketIO(app)
 
-def bet(better, activity, target, time):
-    # TODO: Verify user can afford the bet
-    # TODO: Calculate expiration time
-    # TODO: Register bet
-    # TODO: Emit info to clients
+def bet(better, activity, target, amount, time):
+    if users[better]["money"] < amount:
+        amount = users[better]["money"]
+    time = 2
+    reward = amount * activities[activity]["ROI"]
+    users[better]["money"] -= amount
+    ctime = datetime.now()
+    expiration = ctime + timedelta(minutes=time)
+    runBet = {
+        "betID": len(bets),
+        "deadline": f"{expiration.hour}:{expiration.minute}",
+        "target": target,
+        "activity": activity,
+        "reward": reward,
+        "complete": False,
+        "better": better
+    }
+    t = Timer(time*60, evalBet, runBet)
+    bets.append(runBet)
+    print(bets)
+    t.start()
     pass
 
+def evalBet(bet):
+    print(f"BET EXPIRED: {bet}")
+    pass
 
 def stockPrice(name):
     return stock_prices[name]
-
-
-def upPrice(name, amount=1):
-    """Adjust the price of a stock upwards"""
-    for _ in range(amount):
-        stock_prices[name] = round(stock_prices[name] * (1 + price_constant), 4)
-    print(name, "new price: ", stock_prices[name])
-
-
-def downPrice(name, amount=1):
-    """Adjust the price of a stock downwards"""
-    for _ in range(amount):
-        stock_prices[name] = round(stock_prices[name] / (1 + price_constant), 4)
-    print(name, "new price: ", stock_prices[name])
 
 
 @app.route("/")
@@ -77,13 +86,15 @@ def index():
     if name == None:
         return redirect(url_for("static", filename="login.html"))
     if name in users.keys():
+        print([b for b in bets if b["better"] == name ])
         return render_template(
             "index.html",
             name=name,
             user=users[name],
             activities=activities,
             users=users,
-            stock_prices=stock_prices
+            stock_prices=stock_prices,
+            bets = [b for b in bets if b["better"] == name ]
         )
     return redirect(url_for("static", filename="login.html"))
 
@@ -136,9 +147,7 @@ def invest(name=None):
         users[buyer]["stocks"][name] += amount
         users[buyer]["tot_stocks"] += amount
         users[buyer]["money"] -= tot_price
-
-        # Update stock price
-        upPrice(name, amount)
+        stock_prices[buyer] = round(users[buyer]["money"] / (price_constant), 4)
 
         # Update interface
         sock.emit("bought", {"name": buyer, "new": users[buyer]["stocks"][name], "amount": amount, "stock": name})
@@ -172,9 +181,7 @@ def sell(name=None):
         users[seller]["stocks"][name] -= amount
         users[seller]["tot_stocks"] -= amount
         users[seller]["money"] += round(amount * stockPrice(name), 2)
-
-        # Adjust stock price
-        downPrice(name, amount)
+        stock_prices[seller] = round(users[seller]["money"] / (price_constant), 4)
 
         # Update interface
         sock.emit("sold", {"name": seller, "new": users[seller]["stocks"][name], "amount": amount, "stock": name})
@@ -198,8 +205,10 @@ def getBet(activity=None):
     player = request.json["player"]
     time = request.json["time"]
     better = request.cookies.get("name")
-    bet(better, activity, player, time)
+    bet(better, activity, player, amount, time)
+    stock_prices[better] = round(users[better]["money"] / (price_constant), 4)
     sock.emit("bet", {"name": better, "activity": activity, "amount": amount, "player": player})
+    sock.emit("update", {"type": "player", "name": better, "money": users[better]["money"], "tot_stocks": users[better]["tot_stocks"], "stock": users[better]["stocks"][better], "who": better, "price": stockPrice(better)})
     return redirect("/")
 
 
@@ -210,13 +219,35 @@ def adminMenu(name=None):
         return render_template("admin.html", users=users, activities=activities)
     return redirect("/")
 
+@app.get("/admin/api/winbet/<betID>")
+def winBet(name=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        # Find bet-thread and mark it complete
+        # Give player their money
+        pass
+
+@app.get("/admin/api/freeMoney/<name>/<amount>")
+def freeMoney(name=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        # add money to player
+        # emit event
+        pass
+
+@app.get("/admin/api/newpin/<name>")
+def newPin(name=None):
+    name = request.cookies.get("name")
+    if name in admins:
+        # change player password
+        pass
+
 
 @sock.on("connect")
 def handleConnect():
     print("Client connected")
-    emit("bet", {"data": "test"})
 
-class looping(Thread):
+class Looping(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.running = True
@@ -237,6 +268,9 @@ class looping(Thread):
 def playerMoney():
     return [{"name": u, "money": users[u]["money"]} for u in users]
 
+def allBets():
+    return [{"better": u, "activity": users[u]["money"]} for u in users]
+
 
 def validateLogin(name, password):
     """Validate login information"""
@@ -247,7 +281,7 @@ def validateLogin(name, password):
 
 
 if __name__ == '__main__':
-    loop = looping()
+    loop = Looping()
     #loop.start()
     app.run(host="0.0.0.0", debug=True)
     #loop.stop()

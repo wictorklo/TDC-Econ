@@ -21,16 +21,15 @@
             "time": 1000
         },
         "Hit": {
-            "desc": "Hit on woman",
+            "desc": "Hit on weman",
             "ROI": 0,
             "time": 10
         }
     },
     "people": ["Wictor", "William", "Oliver", "Rolf", "Julian", "Jacob", "Mads", "Erick", "Jan", "Mani", "Lucas"],
-    "passwords": ["1234", "4321", "8008", "1234", "4321", "8008", "1234", "4321", "8008", "1234", "4321"],
     "admins": ["Wictor", "Sexy"],
     "start_cash": 1000,
     "configStock": {
-        "unitPriceRatio": 0.1
+        "unitPriceRatio": 1000
     }
 }
